@@ -12,43 +12,21 @@ char test[1000];
 struct Node* head = NULL;
 int listCounter = 0;
 
-void compareCircles(int **arr, int **holdPermutations, int numVertex)
-{
-    int list1[numVertex];
-    int list2[numVertex];
-
-    int verdict = 0;
-
-    for (int i = 0; i < numVertex; i++)
-        for (int j = 0; j < numVertex; j++)
-            if(arr[i][j] < 9999)
-                list1[j] = i;
-
-    for (int i = 0; i < numVertex; i++)
-        if(list1[i] != holdPermutations[1][i])
-            verdict = 1;
-
-    if(verdict == 1)
-        printf("\nThese lists are Not Equal");
-    else
-        printf("\nThese lists are Equal");
-}
-
-void printTable(int **arr, int numVertex, int numElements)
+void printTable(float **arr, int numVertex, int numElements)
 {
     printf("\n\n");
 
     for (int i = 0; i < numVertex; i++)
     {
         for (int j = 0; j < numElements; j++)
-            printf("%4d ", arr[i][j]);
+            printf("%4.0f ", arr[i][j]);
 
         printf("\n\n");
     }
         printf("\n");
 }
 
-void generateRandomCostMatrix(int **arr, int numVertex, int maxCost)
+void generateRandomCostMatrix(float **arr, int numVertex, int maxCost)
 {
     int count = 0;
 
@@ -69,7 +47,7 @@ void generateRandomCostMatrix(int **arr, int numVertex, int maxCost)
     }
 }
 
-void generateRandomEuclideanMatrix(int **arr, int **holdPermutations, int numVertex)
+void generateRandomEuclideanMatrix(float **arr, float **holdPermutations, int numVertex)
 {
     int realCost;
 
@@ -100,151 +78,165 @@ void generateRandomEuclideanMatrix(int **arr, int **holdPermutations, int numVer
             arr[i][j] = arr[j][i];
 }
 
-void generateRandomEuclideanCircle(int **arr, int numVertex, int radius)
+void generateRandomEuclideanCircle(float **arr, float **holdPermutations, int numVertex, int radius) // test numVertex = 10, Radius = 100
 {
-    double sliceAngle = ((2 * PI) / numVertex);
+    ///
+
+    double radianSlice = (PI / numVertex);
     int sliceCost = 0;
+    double ySlice;
+    double xSlice;
 
-    int sliceSize = pow(radius, 2) + pow(radius, 2) - 2 * pow(radius, 2) * cos(sliceAngle);
+    printf("\nGenerate Random Euclidean Circle");
 
-    sliceSize = sqrt(sliceSize);
+    //printf("\n\nRadian Slice: %f", radianSlice);
 
-    int first;
-    int last;
+    // Start Series Generation=======================================================================
 
-    int previous = -1;
+    int numSeries[numVertex];
     int count = 0;
+    int nextNumber;
 
-    for (int i = 0; i < numVertex; i++)
-        for (int j = 0; j < numVertex; j++)
-            arr[i][j] = 0;
+    for(int i=0; i<numVertex; i++)
+        numSeries[i] = -1;
+        
+    numSeries[0];
 
-    while (count < numVertex)
+    int assignNum = 0;
+
+    while(count < numVertex)
     {
-        int selectFrom = previous;
-        int selectTo = -1;
+        nextNumber = (rand() % (numVertex-1)) + 1;
 
-        if(count == 0)
+        //printf("\n\nnextNumber: %d", nextNumber);
+
+        int gate = 0;
+        int isPresent = 0;
+
+        while(gate < numVertex)
         {
-            do
+            //printf("\nChecking if: %d == %d", numSeries[gate], nextNumber);
+
+            if(numSeries[gate] == nextNumber)
             {
-                first = rand() % numVertex;
-                selectFrom = first;
-                selectTo = rand() % numVertex;
+                //printf("\n%d == %d", numSeries[gate], nextNumber);
+                gate = numVertex;
+                isPresent = 1;
             }
-            while(selectFrom == selectTo);
-        }
-        else if(count < numVertex -1)
-        {
-            do
+            else
             {
-                selectTo = rand() % numVertex;
-                //printf("\n\nTest From: %d To: %d", selectFrom, selectTo);
-                //printf("\nCannot be first: %d or previous: %d", first, previous);
+                gate++;
             }
-            while((previous == selectTo) || (selectTo == first)); 
-        }
-        else
-        {
-            selectTo = first;
         }
 
-        int alreadySelected = 0;
-
-        for (int j = 0; j < numVertex; j++)
+        if(isPresent == 0)
         {
-            //printf("\narr[%d][%d]: %d", count, j, arr[count][j]);
-
-            if((arr[selectFrom][j] != 0) || (arr[j][selectTo] != 0))
-                alreadySelected = 1;
-        }
-
-        //printf("\nAlready Selected: %d", alreadySelected);
-            
-        if(alreadySelected == 0)
-        {
-            printf("\n\nFrom: %d", selectTo);
-            printf(" To: %d", selectFrom);
-
-            arr[selectFrom][selectTo] = sliceSize;
-            sliceCost = sliceCost + sliceSize;
-            previous = selectTo;
+            //printf("\nAssigning: numSeries[%d] == %d", assignNum, nextNumber);
+            numSeries[assignNum] = nextNumber;
+            //printf("\nnumSeries[%d]: %d", assignNum, numSeries[assignNum]);
+            assignNum = numSeries[assignNum];
             count++;
         }
-        else
-        {
-            //printf("\nAlready Selected");
-        }
 
+        if(count == numVertex - 1)
+        {
+            numSeries[assignNum] = 0;
+            count++;
+        }
     }
 
-    //printf("\nTotal circut cost: %d\n", sliceCost);
+    int orderedSeries[numVertex];
 
-    for (int i = 0; i < numVertex; i++)
-        for (int j = 0; j < numVertex; j++)
-        {
-            if(arr[j][i] == arr[i][j])
-                arr[i][j] = 9999;
-        }
+    orderedSeries[0] = numSeries[0];
 
-    for (int i = 0; i < numVertex; i++)
-        for (int j = 0; j < numVertex; j++)
-        {
-            if((arr[i][j] == 0) && (i != j))
-                arr[i][j] = 9999;
+    nextNumber = numSeries[0];
 
-            if((arr[j][i] == 0) && (i != j))
-                arr[j][i] = 9999;
-        }
-}
-
-void generateRandomEuclideanCircle2(int numVertex, int radius)
-{
-    double sliceAngle = ((2 * PI) / numVertex);
-    int sliceCost = 0;
-    int ySlice;
-    int xSlice;
-
-    int sliceSize = pow(radius, 2) + pow(radius, 2) - 2 * pow(radius, 2) * cos(sliceAngle);
-
-    sliceSize = sqrt(sliceSize);
-
-    int coordMax = 2*radius;
-
-    int** holdCircle = (int**)malloc(coordMax * sizeof(int*));
-
-    for (int i = 0; i < coordMax; i++)
-        holdCircle[i] = (int*)malloc(coordMax * sizeof(int));
-
-
-    for (int i = 0; i < numVertex; i++)
-        for (int j = 0; j < numVertex; j++)
-            holdCircle[i][j] = 0;
-
-    printTable(holdCircle, coordMax, coordMax);
-    
-
-    int center = coordMax / 2;
-
-    int x=center;
-    int y=center;
-
-    holdCircle[y][x] = 0;
-
-    holdCircle[y-sliceSize][x] = 0;
-/*
     for(int i=1; i<numVertex; i++)
     {
-        ySlice = y-sin(sliceAngle*i);
-        xSlice = x+cos(sliceAngle*i);
-        holdCircle[ySlice][xSlice] = i;
-    }*/
+        orderedSeries[i] = numSeries[nextNumber];
+        nextNumber = orderedSeries[i];
+    }
 
+    for(int i=0; i< numVertex; i++)
+    {
+        holdPermutations[2][i+1] = orderedSeries[i];
+    }
 
-    for (int i = 0; i < numVertex; i++)
-        free(holdCircle[i]);
- 
-    free(holdCircle);  
+    holdPermutations[2][0] = 0;
+
+    //printf("\n\nChecking Series\n");
+
+    //for(int i=0; i<numVertex; i++)
+        //printf("\nnumSeries[%d]: %d", i, numSeries[i]);
+
+    // End Series Generation==========================================================================
+
+    // Start Circle Test==============================================================================
+
+    double slicePie = 2*PI / numVertex;
+
+    for(int i=0; i<=numVertex; i++)
+    {
+        ySlice = radius * sin((slicePie)*i);
+        xSlice = radius * cos((slicePie)*i);
+        //printf("\nID: %d, ySlice: %f, xSlice: %f", i, ySlice, xSlice);
+    }
+
+    // End Circle Test================================================================================
+
+    // Start Circle Generation========================================================================
+
+    for(int i=0; i<=numVertex; i++)
+    {
+        holdPermutations[0][i] = radius * sin((slicePie)*i);
+        //printf("\n %f == %f", holdPermutations[0][i], radius * sin((slicePie)*i));
+        holdPermutations[1][i] = radius * cos((slicePie)*i);
+        //printf("\n %f == %f", holdPermutations[1][i], radius * sin((slicePie)*i));
+    }
+
+    for(int i=0; i<numVertex; i++)
+        numSeries[i+1] = orderedSeries[i];
+
+    numSeries[0] = 0;
+
+    for(int i=0; i<numVertex; i++)
+        orderedSeries[numSeries[i]] = i;
+
+    for(int i=0; i<numVertex; i++)
+        for(int j=0; j<numVertex; j++)
+            arr[i][j]=0;
+
+    for(int i=0; i<numVertex; i++)
+        for(int j=0; j<numVertex; j++)
+        {
+            arr[numSeries[i]][j] = sqrt(pow(holdPermutations[0][orderedSeries[j]] - holdPermutations[0][i], 2) + pow(holdPermutations[1][orderedSeries[j]] - holdPermutations[1][i], 2));
+        }
+
+    holdPermutations[2][numVertex+1] = 0;
+    
+    printf("\n\nShortest Path\n");
+    for(int i=0; i<numVertex; i++)
+    {
+        int j = holdPermutations[2][i];
+        int k = holdPermutations[2][i+1];
+        printf("\nFrom: %0.f To: %0.f. Cost: %.0f", holdPermutations[2][i], holdPermutations[2][i+1], arr[j][k]);
+        holdPermutations[2][numVertex+1] = holdPermutations[2][numVertex+1] + arr[j][k];
+    }
+    
+    printf("\n\nTotal Cost: %.0f", holdPermutations[2][numVertex+1]);
+
+    /*
+    printf("\n");
+    for(int i=0; i<numVertex; i++)
+        printf("\norderedSeries[%d]: %d", i, orderedSeries[i]);
+    
+    printTable(holdPermutations, 4, numVertex+2);
+
+    printf("\n\n");
+
+        printTable(arr, numVertex, numVertex);
+  */
+    // End Circle Generation========================================================================
 }
 
 void printNumArray(int toBuild[], int numVertex)
@@ -277,49 +269,11 @@ int factorial(int number)
     return outNum;
 }
 
-void bruteForce(int **holdVerticies, int **holdPermutations, int numVertex)
-{
-
-    if(holdPermutations[1][numVertex+1] < holdPermutations[0][numVertex+1])
-    {
-        for(int j=0; j<numVertex+2; j++)
-            holdPermutations[0][j] = holdPermutations[1][j];
-    }
-}
-
-void bruteAssign(int arr[], int size, int **holdPermutations, int **holdVerticies, int numVertex)
-{
-    int i,j;
-    //printf("\nArr: ");
-    for(i=1; i<size; i++)
-    {
-        holdPermutations[1][i] = arr[i];
-        //printf("\t%d", arr[i]);
-    }
-    //printf("\n");
-
-    holdPermutations[1][numVertex+1] = 0;
-
-    for(int j=0; j<numVertex; j++)
-    {
-        holdPermutations[1][numVertex+1] = holdPermutations[1][numVertex+1] + holdVerticies[holdPermutations[2][j]][holdPermutations[2][j+1]];
-        //printf("\n%d %d %d %d\n", holdPermutations[1][numVertex+1], holdVerticies[holdPermutations[2][j]][holdPermutations[2][j+1]], holdPermutations[2][j], holdPermutations[2][j+1]);
-    }
-/*
-    for(int i=0; i<3; i++)
-    {
-        printf("\nArray %d: ", i);
-        for(int j=0; j<numVertex+2; j++)
-        {
-            printf("\t%d", holdPermutations[i][j]);
-        }
-    }
-*/
-    bruteForce(holdVerticies, holdPermutations, numVertex);
-}
+//**************************************************************************************************************************************
+// Brute Force
 
 //function to swap the variables
-void swap(int *a, int *b)
+void swap(float *a, float *b)
 {
     int temp;
     temp = *a;
@@ -327,16 +281,15 @@ void swap(int *a, int *b)
     *b = temp;
 }
 
-//permutation function
-void permutation(int *arr, int start, int end, int **holdPermutations, int **holdVerticies, int numVertex)
+//bruteForce function
+void bruteForce(float *arr, int start, int end, float **holdPermutations, float **holdVerticies, int numVertex)
 {
     if(start == 1)
     {
-        for(int i=0;i<numVertex+1;i++)
-        {
-            holdPermutations[0][i] = i;
-            holdPermutations[1][i] = i;
-        }
+        for(int i=0; i< 4; i++)
+            for(int j=0; j<numVertex+2; j++)
+                holdPermutations[i][j] = j;
+
         holdPermutations[0][numVertex] = 0;
         holdPermutations[0][numVertex+1] = 9999;
         holdPermutations[1][numVertex] = 0;
@@ -347,92 +300,104 @@ void permutation(int *arr, int start, int end, int **holdPermutations, int **hol
     }
     if(start==end)
     {
-        bruteAssign(arr, end+1, holdPermutations, holdVerticies, numVertex);
+        holdPermutations[1][numVertex+1] = 0;
+
+        for(int j=0; j<numVertex; j++)
+        {
+            int k = holdPermutations[2][j];
+            int l = holdPermutations[2][j+1];
+            holdPermutations[1][numVertex+1] = holdPermutations[1][numVertex+1] + holdVerticies[k][l];
+            holdPermutations[1][j] = holdPermutations[2][j];
+        }
+
+        if(holdPermutations[1][numVertex+1] < holdPermutations[0][numVertex+1])
+        {
+            for(int j=0; j<numVertex+2; j++)
+                holdPermutations[0][j] = holdPermutations[1][j];
+        }
         return;
     }
     int i;
     for(i=start;i<=end;i++)
     {
         swap((arr+i), (arr+start));
-        permutation(arr, start+1, end, holdPermutations, holdVerticies, numVertex);
+        bruteForce(arr, start+1, end, holdPermutations, holdVerticies, numVertex);
         swap((arr+i), (arr+start));
     }
 }
 
-void greedyAlg(int **holdVerticies, int **holdPermutations, int numVertex)
+//**************************************************************************************************************************************
+
+//**************************************************************************************************************************************
+// Greedy (Prim's)
+
+void greedyAlg(float **holdVerticies, float **holdPermutations, int numVertex)
 {
-    /*
-    holdPermutations[0][j] -- For Final
-    holdPermutations[1][j] -- For Swap
-    holdPermutations[2][j] -- For Test
-    */
-    //printf("Shortest Path:\n");
+    //printf("\n**************************************************************************************************************");
 
-    for(int i=0; i<3; i++)
-        for(int j=0; j<numVertex+2; j++)
-        {
-            holdPermutations[i][j] = 9999;
-        }
-
-    for(int i=0; i<numVertex; i++)
+    for(int i=0; i<numVertex+2; i++)
     {
-        holdPermutations[0][i] = i;
+        holdPermutations[0][i] = 0;
+        holdPermutations[1][i] = 0;
+        holdPermutations[2][i] = 0;
+        holdPermutations[3][i] = 9999;
     }
 
-    int allCheck = numVertex;
-    holdPermutations[0][numVertex] = 1;
-    holdPermutations[2][numVertex+2] = 0;
+    //printf("\n\nFirst Tables");
+    //printTable(holdVerticies, numVertex, numVertex);
+    //printTable(holdPermutations, 4, numVertex+2);
 
-    while(allCheck > 0)
+    int remaining = numVertex;
+    int nextNumber = 0;
+
+    while(remaining > 0)
     {
-        for(int i=numVertex - allCheck; i<numVertex; i++)
+        for(int i=0; i<numVertex; i++)
         {
-            if((holdPermutations[1][i] == 9999))
-                for(int j=0; j<numVertex; j++)
+
+            if(remaining != 1)
+            {
+                if((nextNumber != i) && (holdVerticies[nextNumber][i] < holdPermutations[3][numVertex]) && (holdPermutations[0][i] != 1))
                 {
-                    if(allCheck == 1)
-                    {
-                        if((holdVerticies[j][i] < holdPermutations[2][numVertex+1]) && (holdPermutations[1][j] != i) && (i!=j))
-                        {
-                            //printf("\nPlacing %d and %d\n", i, holdVerticies[j][i]);
-                            holdPermutations[1][numVertex] = holdPermutations[0][i];
-                            holdPermutations[0][numVertex+1] = holdPermutations[0][j];
-                            holdPermutations[1][numVertex+1] = i;
-                            holdPermutations[2][numVertex+1] = holdVerticies[j][i];
-                            holdPermutations[2][numVertex] = holdPermutations[0][i];
-                        }
-                    }
-                    else
-                        if((holdVerticies[j][i] < holdPermutations[2][numVertex+1]) && (holdPermutations[0][j] != holdPermutations[0][i]) && (holdPermutations[1][j] != i) && (i!=j))
-                        {
-                            //printf("\nPlacing %d and %d\n", i, holdVerticies[j][i]);
-                            holdPermutations[1][numVertex] = holdPermutations[0][i];
-                            holdPermutations[0][numVertex+1] = holdPermutations[0][j];
-                            holdPermutations[1][numVertex+1] = i;
-                            holdPermutations[2][numVertex+1] = holdVerticies[j][i];
-                            holdPermutations[2][numVertex] = holdPermutations[0][i];
-                        }
+                    holdPermutations[0][numVertex] = i;
+                    holdPermutations[1][numVertex] = nextNumber;
+                    holdPermutations[2][numVertex] = i;
+                    holdPermutations[3][numVertex] = holdVerticies[nextNumber][i];
                 }
+            }
+            else
+            {
+                holdPermutations[0][numVertex] = i;
+                holdPermutations[1][numVertex] = nextNumber;
+                holdPermutations[2][numVertex] = 0;
+                holdPermutations[3][numVertex] = holdVerticies[nextNumber][0];
+            }
         }
-        printf("\n%d->%d cost: %d", holdPermutations[1][numVertex+1], holdPermutations[0][numVertex+1], holdPermutations[2][numVertex+1]);
-        holdPermutations[2][numVertex+2] = holdPermutations[2][numVertex+2] + holdPermutations[2][numVertex+1];
-        holdPermutations[0][holdPermutations[0][numVertex+1]] = holdPermutations[1][numVertex];
-        holdPermutations[1][holdPermutations[1][numVertex+1]] = holdPermutations[0][numVertex+1];
-        holdPermutations[2][holdPermutations[1][numVertex+1]] = holdPermutations[2][numVertex+1];
 
-        for(int k=0; k<numVertex; k++)
-            if(holdPermutations[0][k] == holdPermutations[0][numVertex+1])
-                holdPermutations[0][k] = holdPermutations[1][numVertex];
+        //int k = holdPermutations[0][numVertex];
+        holdPermutations[0][nextNumber] = 1;
+        holdPermutations[1][nextNumber] = holdPermutations[1][numVertex];
+        holdPermutations[2][nextNumber] = holdPermutations[2][numVertex];
+        holdPermutations[3][nextNumber] = holdPermutations[3][numVertex];
+        //printf("\nStoring: %.0f", holdPermutations[3][numVertex]);
 
-        holdPermutations[0][numVertex+1] = 9999;
-        holdPermutations[1][numVertex+1] = 9999;
-        holdPermutations[2][numVertex+1] = 9999;
+        holdPermutations[2][numVertex+1] = holdPermutations[2][numVertex+1] + holdPermutations[3][numVertex];
 
-        allCheck--;
+        holdPermutations[0][numVertex] = 0;
+        holdPermutations[1][numVertex] = 0;
+        holdPermutations[2][numVertex] = 0;
+        holdPermutations[3][numVertex] = 9999;
+
+        nextNumber = holdPermutations[2][nextNumber];
+        remaining--;
     }
 
-    printf("\n\nPath Cost: %d", holdPermutations[2][numVertex+2]);
+    //printf("\n\nFinal Table\n");
+    //printTable(holdPermutations, 4, numVertex+2);
+    //printf("\n**************************************************************************************************************");
 }
+
+//**************************************************************************************************************************************
 
 struct Node
 {
@@ -472,16 +437,27 @@ void push(struct Node** head_ref, int new_data)
 
 void printList(struct Node* n)
 {
+    char bestID[1000];
+    int bestData = 0;
+    int bestPathTread = 9999;
+    int totalAnts = 0;
+    int totalData = 0;
+
     while (n != NULL) {
-        if(n->pathTread > 20)
+        totalAnts = totalAnts + n->pathTread;
+        totalData = totalData + (n->data*n->pathTread);
+        if(n->pathTread < bestPathTread)
         {
-        printf("\nNext List: ");
-        printf("id: %s ", n->id);
-        printf("data: %d ", n->data);
-        printf("tread: %d ", n->pathTread);
+            bestData = n->data;
+            bestPathTread = n->pathTread;
+            strcpy(bestID, n->id);
         }
         n = n->next;
     }
+
+    float averageData = totalData / totalAnts;
+
+    printf("\nBest Path: %s at cost %d. Chosen by %d of %d ants! The average path cost was %.0f", bestID, bestData, bestPathTread, totalAnts, averageData);
 }
 
 int search(struct Node* head, int pathValue)
@@ -492,15 +468,6 @@ int search(struct Node* head, int pathValue)
 
     while (current != NULL)
     {
-        /*
-        printf("\nNode: %d", current);
-        printf("\nid: %s ", current->id);
-        printf("\ndata: %d ", current->data);
-        printf("\ntread: %d ", current->pathTread);
-*/
-        //printf("\n\nComparing %s and %s", current->id, test);
-        //printf("\nstrcmp val: %d", strcmp(current->id,test));
-
         if (strcmp(current->id,test) == 0)
         {
             //printf("\nFound Equal\n");
@@ -513,7 +480,7 @@ int search(struct Node* head, int pathValue)
     return 0;
 }
 
-void pathWeight(int **holdVerticies, int **holdPermutations, int numVertex)
+void pathWeight(float **holdVerticies, float **holdPermutations, int numVertex)
 {
     float whereIsTheFood;
     float thisHouse;
@@ -526,7 +493,7 @@ void pathWeight(int **holdVerticies, int **holdPermutations, int numVertex)
     holdPermutations[1][numVertex+1] = 0;
     int count = numVertex;
 
-    printf("\nNew Sandwich");
+    //printf("\nNew Sandwich");
 
     while(count > 0)
     {
@@ -644,7 +611,7 @@ void pathWeight(int **holdVerticies, int **holdPermutations, int numVertex)
 
             badHouse = 1;
 
-            printf("\nAnt %d found a sandwich at Random House: %d at Distance: %d\n", ant, bite, holdVerticies[ant][bite]);
+            //printf("\nAnt %d found a sandwich at Random House: %d at Distance: %d\n", ant, bite, holdVerticies[ant][bite]);
 
             holdPermutations[3][numVertex+1] = holdPermutations[3][numVertex+1] + holdVerticies[ant][bite];
             holdPermutations[1][ant] = bite;
@@ -654,7 +621,7 @@ void pathWeight(int **holdVerticies, int **holdPermutations, int numVertex)
         }
         else
         {
-            printf("\nAnt %d found a sandwich at Random House: %d at Distance: %d\n", ant, 0, holdVerticies[bite][ant]);
+            //printf("\nAnt %d found a sandwich at Random House: %d at Distance: %d\n", ant, 0, holdVerticies[bite][ant]);
 
             holdPermutations[3][numVertex+1] = holdPermutations[3][numVertex+1] + holdVerticies[ant][0];
             holdPermutations[1][ant] = 0;
@@ -683,7 +650,7 @@ void pathWeight(int **holdVerticies, int **holdPermutations, int numVertex)
     //printTable(holdPermutations, 4, numVertex+2);
 }
 
-void catInt(int **holdPermutations, int numVertex)
+void catInt(float **holdPermutations, int numVertex)
 {
     int converted = holdPermutations[0][0];
     //printf("\nconverted: %d", converted);
@@ -699,6 +666,7 @@ void catInt(int **holdPermutations, int numVertex)
     {
         converted = holdPermutations[0][i];
         itoa(converted, tmpShell, 10);
+        strcat(stringShell, "->");
         strcat(stringShell, tmpShell);
         //printf("\nUsing converted: %d, stringShell: %s, tmpShell: %s", converted, stringShell, tmpShell);
     }
@@ -711,7 +679,7 @@ void catInt(int **holdPermutations, int numVertex)
         //printf("\n\ntest: %s", test);
 }
 
-void antColony(int **holdVerticies, int **holdPermutations, int numVertex)
+void forgetfulAntColony(float **holdVerticies, float **holdPermutations, int numVertex)
 {
     int allCheck = numVertex*10;
 
@@ -751,163 +719,1024 @@ void antColony(int **holdVerticies, int **holdPermutations, int numVertex)
     //printf("\nFinal Colony:\n");
 }
 
-int main(int argc, char **argv) // Number of Verticies, Generation Type, Variable Unit
+
+//************************************************************************************************************************************************************
+
+
+
+
+//************************************************************************************************************************************************************
+
+void antColony(float **holdVerticies, float **holdPermutations, float **holdSmells, float **holdNewSmells, int ants, float smellFactor, float smellDecay, int requiredConsecutiveSteps, int numVertex)
 {
-    strcpy(test, "0000");
-    push(&head, 100);
+    // holdPermutations[0][< numvertex] = path
+    // holdPermutations[1][< numvertex] = visited
+    // holdPermutations[2][< numvertex] = minPath
 
-    clock_t start, end;
-    double total = 0.0;
-
-    int numVertex = atoi(argv[1]);
-    int generationType = atoi(argv[2]);
-    int variableUnit = atoi(argv[3]);
-    int pathType = atoi(argv[4]);
-
-    int permutationRows = 4;
-
-    time_t seconds = time(NULL);
-    srand(seconds);
-
-    // Makes array for loading edges
-    int** holdVerticies = (int**)malloc(numVertex * sizeof(int*));
-
-    for (int i = 0; i < numVertex; i++)
-        holdVerticies[i] = (int*)malloc(numVertex * sizeof(int));
-
-    // Makes array for permutations
-
-    int** holdPermutations = (int**)malloc(permutationRows * sizeof(int*));
-
-    for (int i = 0; i < permutationRows; i++)
-        holdPermutations[i] = (int*)malloc((numVertex+2) * sizeof(float));
-
-    // Switch for generation types
-    if(generationType == 0)
-        generateRandomCostMatrix(holdVerticies, numVertex, variableUnit);
-    else if(generationType == 1)
-        generateRandomEuclideanMatrix(holdVerticies, holdPermutations, numVertex);
-    else if(generationType == 2)
-    {
-        printf("\nRandom Euclidean Circle Path");
-        generateRandomEuclideanCircle(holdVerticies, numVertex, 100);
-
-        //generateRandomEuclideanCircle2(numVertex, 20);
-    }
-    else
-    {
-        printf("\nManual\n");
-        holdVerticies[0][0] = 0;
-        holdVerticies[0][1] = 1000;
-        holdVerticies[0][2] = 10;
-        holdVerticies[1][0] = 1000;
-        holdVerticies[1][1] = 0;
-        holdVerticies[1][2] = 20;
-        holdVerticies[2][0] = 10;
-        holdVerticies[2][1] = 20;
-        holdVerticies[2][2] = 0;
-    }
-    printTable(holdVerticies, numVertex, numVertex);
-
-    // Switch for shortest path
-    if(pathType == 0)
-    {
-        for(int i=1;i<numVertex;i++)
-            holdPermutations[2][i] = i;
-
-                struct timeval start, end;
- 
-    gettimeofday(&start, NULL);
- 
-        permutation(holdPermutations[2], 1, numVertex-1, holdPermutations, holdVerticies, numVertex);
-
- 
-    gettimeofday(&end, NULL);
- 
-    long seconds = (end.tv_sec - start.tv_sec);
-    long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
- 
-
-        printf("\nBrute Force\n");
-
-        printf("\nShortest Path:\n");
-        for(int i=0; i<numVertex; i++)
-        {
-            printf("\n%d->%d", holdPermutations[0][i], holdPermutations[0][i+1]);
-            printf(" cost: %d", holdVerticies[holdPermutations[0][i]][holdPermutations[0][i+1]]);
-        }
-        printf("\n\nPath Cost: %d", holdPermutations[0][numVertex+1]);
-
-    printf("\n\nThe elapsed time is %d microseconds\n", micros);
-
-        
-    }
-    else if(pathType == 1)
-    {
-
-        printf("\nPrim's Greedy\n");
-
-        struct timeval start, end;
- 
-        gettimeofday(&start, NULL);
-        greedyAlg(holdVerticies, holdPermutations, numVertex);
-        gettimeofday(&end, NULL);
- 
-        long seconds = (end.tv_sec - start.tv_sec);
-        long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
- 
-        printf("\nThe elapsed time is %d microseconds\n", micros);
-    }
-    else if(pathType == 2)
-    {
-        printf("\nForgetful Ant Colony\n");
-
-        struct timeval start, end;
- 
-        gettimeofday(&start, NULL);
-        antColony(holdVerticies, holdPermutations, numVertex);
-        gettimeofday(&end, NULL);
- 
-        long seconds = (end.tv_sec - start.tv_sec);
-        long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
- 
-        printf("\nThe elapsed time is %d microseconds\n", micros);
-    }
-    else
-        printf("\n\nBoop\n");
-
-
+    //printTable(holdVerticies, numVertex, numVertex);
     //printTable(holdPermutations, 4, numVertex+2);
 
-    //Test Fluff
-    //printf("\n\n");
-        printf("\n\n");
-    //compareCircles(holdVerticies, holdPermutations, numVertex);
+
+    int homeNode;
+    int currentNode;
+    int potNext;
+    float totalAttraction;
+    float takeSniff;
+    float cumulProb;
+    float edgeSelectionProb;
+    float minPathCostSoFar;
+    float previousPathCost;
+    int attempts = 0;
+
+    int consecutiveSteps = 0;
+
+    for(int i=0; i<4; i++)
+        for(int j=0; j<numVertex+2; j++)
+            holdPermutations[i][j] = 0;
 
     //printTable(holdVerticies, numVertex, numVertex);
 
-    //printf("\ncrash 1");
 
-    //Test Fluff
-    printList(head);
 
-    deleteList(&head);
+    //printf("\nCrash AC1");
 
-    for (int i = 0; i < numVertex; i++)
-        free(holdVerticies[i]);
- 
-    free(holdVerticies);    
+    while(consecutiveSteps < requiredConsecutiveSteps)
+    {
+        for(int i=0; i<numVertex; i++)
+        {
+            for(int j=0; j<numVertex; j++)
+            {
+                holdSmells[i][j] = 0;
+                holdNewSmells[i][j] = 0;
+            }   
+        }
+
+        //printf("\nCrash AC2");
+
+
+        for(int ant=0; ant<ants; ant++)
+        {
+            //printf("\nCrash AC3");
+
+            holdPermutations[0][numVertex] = 0; // Path Cost
+            homeNode = 0; // Home Node
+
+            for(int j=0; j<numVertex; j++)
+            {
+                holdPermutations[1][j] = 0;
+            }
+
+            holdPermutations[1][0] = 1; // home visited
+
+                //printf("\nAnt: %d", ant);
+
+
+            for(int step=1; step<numVertex; step++)
+            {
+
+                currentNode = (int)holdPermutations[0][step-1];
+
+                totalAttraction = 0;
+                //printf("\nCrash AC5");
+
+                //for(int i=0; i<numVertex; i++)
+                        //printf("\nVisited: %d:%f", i, holdPermutations[1][i]);
+
+                for(potNext=0; potNext<numVertex-1; potNext++)
+                {
+                    //printf("\nPotNext: %d", potNext);
+                    //printf("\n\n%f == 0 ?\n%d != %d", holdPermutations[1][potNext], currentNode, potNext);
+
+                        //printf("\n\nTest Gopher");
+                    
+
+                    if((holdPermutations[1][potNext] == 0) && (currentNode != potNext))
+                    {
+                        //printf("\n\nTotalAttraction: %f holdSmells: %f holdVerticies %f", totalAttraction, holdSmells[currentNode][potNext], holdVerticies[currentNode][potNext]);
+                        totalAttraction = totalAttraction + ((1 + holdSmells[currentNode][potNext])  / holdVerticies[currentNode][potNext]);
+                        //printf("\nCrash AC5.5");
+                    }
+
+                    //printf("\nCrash AC6");
+                        
+                }
+                //printf("\nCrash AC7");
+
+                int randomNumber = (rand() % 1001);
+
+                //printf("\n\nrandomNumber: %d", randomNumber);
+
+                takeSniff = (float)randomNumber / 1000;
+
+                cumulProb = 0;
+
+                        //printf("\n\ntakeSniff: %f cumulProb: %f edgeSelectionProb: %f\n\nVisited: ", takeSniff, cumulProb, edgeSelectionProb);
+
+                //for(int i=0; i<numVertex; i++)
+                    //printf(" %.0f", holdPermutations[1][i]);
+
+                for(potNext=0; potNext<numVertex-1; potNext++)
+                {
+                     //hold
+                    //printf("\n\nPotential Moving To: %d", potNext);
+
+                    if((holdPermutations[1][potNext] == 0) && (currentNode != potNext))
+                    {
+                        edgeSelectionProb = ((1 + holdSmells[currentNode][potNext])  / holdVerticies[currentNode][potNext]) / totalAttraction;
+
+                        cumulProb = cumulProb + edgeSelectionProb;
+
+                        //printf("\n\nCheck me takeSniff: %f cumulProb: %f edgeSelectionProb: %f\n\n", takeSniff, cumulProb, edgeSelectionProb);
+
+                        if(takeSniff < cumulProb)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                    //printf("\n\nMoving To: %d", potNext);
+
+
+                holdPermutations[0][step] = potNext;
+
+
+                holdPermutations[1][potNext] = 1;
+
+                holdPermutations[0][numVertex] = holdPermutations[0][numVertex] + holdVerticies[currentNode][potNext];
+
+                //printf("\nCrash AC7.5");
+
+
+            }
+
+                //printf("\nCrash AC8");
+                //printf("\n\nholdVerticies[homeNode][potNext]: %f", holdVerticies[homeNode][potNext]);
+
+            holdPermutations[0][numVertex] = holdPermutations[0][numVertex] + holdVerticies[homeNode][potNext];
+
+            //printf("\n\nSANITY CHECK1 holdPermutations[0][numVertex]: %f", holdPermutations[0][numVertex]);
+
+            //printf("\n\nAnt: %d", ant);
+
+            if(ant == 0)
+            {
+            //printf("\n\nSANITY CHECK2 holdPermutations[0][numVertex]: %f", holdPermutations[0][numVertex]);
+
+                //printf("\n\nSanity Check");
+                minPathCostSoFar = holdPermutations[0][numVertex];
+
+                //printf("\n\nminPathCostSoFar: %f", minPathCostSoFar);
+
+                for(int i=0; i<numVertex; i++)
+                    holdPermutations[2][i] = holdPermutations[0][i];
+            }
+            else if (holdPermutations[0][numVertex] < minPathCostSoFar)
+            {
+                minPathCostSoFar = holdPermutations[0][numVertex];
+
+                for(int i=0; i<numVertex; i++)
+                    holdPermutations[2][i] = holdPermutations[0][i];
+            }
+
+            for(int step=1; step<numVertex; step++)
+            {
+                homeNode = holdPermutations[0][step];
+                potNext = holdPermutations[0][(step + 1) % numVertex];
+                holdNewSmells[homeNode][potNext] = holdNewSmells[homeNode][potNext] + (smellFactor / holdPermutations[0][numVertex]);
+            }
+
+            //for(int i=1; i<numVertex; i++)
+                //printf("\nPath: %.0f", holdPermutations[0][i]);
+
+            //printf("\n================================================================================================================================");
+        }
+
+        for(int i=0; i<numVertex; i++)
+        {
+            for(int j=0; j<numVertex; j++)
+            {
+                holdSmells[i][j] = holdSmells[i][j]*smellDecay;
+
+                holdSmells[i][j] = holdSmells[i][j] + holdNewSmells[i][j];
+            }
+        }
+
+        //printf("\n\nPreviousPathCost: %f minPathCostSoFar: %f", previousPathCost, minPathCostSoFar);
+
+        if(previousPathCost == minPathCostSoFar)
+        {
+            consecutiveSteps++;
+        }
+        else
+        {
+            consecutiveSteps = 0;
+        }
+
+        attempts++;
+
+        previousPathCost = minPathCostSoFar;
+        holdPermutations[2][numVertex+1] = previousPathCost;
+    }
+        //printf("\nAttempted Steps: %d",attempts);
+
+}
+//************************************************************************************************************************************************************
+
+
+
+
+
+//************************************************************************************************************************************************************
+
+//Main Program
+int main(int argc, char **argv) // Generation Type, Variable Unit, Path Type
+{
+    time_t seconds = time(NULL);
+    srand(seconds);
+
+    int generationType = atoi(argv[1]);
+    int pathType = atoi(argv[2]);
+    int N_min = atoi(argv[3]);
+    int N_max = atoi(argv[4]);
+
+//************************************************************************************************************************************************************
+    double trialsTime_max = .250; // in seconds
+    long long int trialsCount_max = 10000,
+                  n, trial;
+    clock_t splitTimeStamp, trialSetStart;
+    double splitTime, trialSetCount, trialSetTime, dummySetCount, dummySetTime, averageTrialTime, averageDummyTrialTime, estimatedTimePerTrial;
+	
+	// For each size N of input we want to test -- typically start N at 1 and double each repetition
+    if(pathType == 0)
+        for ( n=N_min; n<=N_max; n++ ) {
+
+            Sleep(1000); 
+
+            printf("\n\nBrute Force for N: %d\n", n);
+
+            int permutationRows = 4;
+
+                // Makes array for loading edges
+            float** holdVerticies = (float**)malloc(n * sizeof(float*));
+
+            for (int i = 0; i < n; i++)
+                holdVerticies[i] = (float*)malloc(n * sizeof(float));
+
+            // Makes array for permutations
+
+            float** holdPermutations = (float**)malloc(permutationRows * sizeof(float*));
+
+            for (int i = 0; i < permutationRows; i++)
+                holdPermutations[i] = (float*)malloc((n+2)* sizeof(float));
+
+            // Switch for generation types
+            if(generationType == 0)
+            {
+                generateRandomCostMatrix(holdVerticies, n, 100);
+                printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 1)
+            {
+                generateRandomEuclideanMatrix(holdVerticies, holdPermutations, n);
+                printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 2)
+                generateRandomEuclideanCircle(holdVerticies, holdPermutations, n, 100);
+
+            printf("\n\nGenerate Brute Force");
+            
+            splitTime=0.0;
+            // get timestamp before set of trials are run:
+            trialSetStart = clock();
+            // For each trial trialNumber=1 to Number of Trials per input size:
+            for ( trial=0; trial < trialsCount_max && splitTime < trialsTime_max; trial++) {
+
+                bruteForce(holdPermutations[2], 1, n-1, holdPermutations, holdVerticies, n);
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            trialSetCount = trial; // value of trial when loop ends is how many we did
+            trialSetTime = splitTime; // total time for trial set is the last split time
+            averageTrialTime = trialSetTime / trialSetCount; // this is the average tiem per trial, including any prep/overhead
+
+            splitTime=0.0;
+            // get timestamp before set of dummy trials are run:
+            trialSetStart = clock();
+            for ( trial=0; trial < trialSetCount  && splitTime < trialsTime_max; trial++) {
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            dummySetCount = trial; // value of trial when loop ends is how many we did, should be same as trialsSetCount
+            dummySetTime = splitTime; // total time for dummy trial set is the last split time
+            averageDummyTrialTime = dummySetTime / dummySetCount; // this is the average tiem per dummy trial, including any prep/overhead
+
+            
+            estimatedTimePerTrial = averageTrialTime - averageDummyTrialTime; // should be a decent measurement of time taken to run your algorithm
+            
+            //printTable(holdVerticies, n, n);
+            //printTable(holdPermutations, 4, n+2);
+
+            printf("\n\nShortest Path\n");
+            for(int i=0; i<=n-1; i++)
+            {
+                int j = holdPermutations[0][i];
+                int k = holdPermutations[0][i+1];
+                printf("\nFrom: %.0f To: %.0f. Cost: %.0f", holdPermutations[0][i], holdPermutations[0][i+1], holdVerticies[j][k]);
+            }
+
+            printf("\n\nTotal Cost: %.0f", holdPermutations[0][n+1]);
+
+            printf("\n\nEstimated Time: %lf\n", estimatedTimePerTrial);
+
+            for (int i = 0; i < n; i++)
+                free(holdVerticies[i]);
     
-    //printf("\ncrash 2");
+            free(holdVerticies);
 
-    for (int i = 0; i < permutationRows; i++)
-        free(holdPermutations[i]);
- 
-    //printf("\ncrash 3");
+            for (int i = 0; i < permutationRows; i++)
+                free(holdPermutations[i]);
 
-    free(holdPermutations);
+            free(holdPermutations);
+        }
 
-    printf("\n\nMade %d lists\n", listCounter);
+//************************************************************************************************************************************************************
+// For each size N of input we want to test -- typically start N at 1 and double each repetition
+    if(pathType == 1)
+        for ( n=N_min; n<=N_max; n=n*2 ) {
+
+            Sleep(1000); 
+
+            printf("\n\nGreedy (Prim's) for N: %d\n", n);
+
+            int permutationRows = 4;
+
+                // Makes array for loading edges
+            float** holdVerticies = (float**)malloc(n * sizeof(float*));
+
+            for (int i = 0; i < n; i++)
+                holdVerticies[i] = (float*)malloc(n * sizeof(float));
+
+            // Makes array for permutations
+
+            float** holdPermutations = (float**)malloc(permutationRows * sizeof(float*));
+
+            for (int i = 0; i < permutationRows; i++)
+                holdPermutations[i] = (float*)malloc((n+2)* sizeof(float));
+
+            // Switch for generation types
+            if(generationType == 0)
+            {
+                generateRandomCostMatrix(holdVerticies, n, 100);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 1)
+            {
+                printf("\n\nUsing Euclidean Matrix");
+                generateRandomEuclideanMatrix(holdVerticies, holdPermutations, n);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 2)
+                generateRandomEuclideanCircle(holdVerticies, holdPermutations, n, 100);
+
+            printf("\n\nGenerate Greedy");
+            
+            splitTime=0.0;
+            // get timestamp before set of trials are run:
+            trialSetStart = clock();
+            // For each trial trialNumber=1 to Number of Trials per input size:
+            for ( trial=0; trial < trialsCount_max && splitTime < trialsTime_max; trial++) {
+
+                greedyAlg(holdVerticies, holdPermutations, n);
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            trialSetCount = trial; // value of trial when loop ends is how many we did
+            trialSetTime = splitTime; // total time for trial set is the last split time
+            averageTrialTime = trialSetTime / trialSetCount; // this is the average tiem per trial, including any prep/overhead
+
+            
+            splitTime=0.0;
+            // get timestamp before set of dummy trials are run:
+            trialSetStart = clock();
+            for ( trial=0; trial < trialSetCount  && splitTime < trialsTime_max; trial++) {
+
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            dummySetCount = trial; // value of trial when loop ends is how many we did, should be same as trialsSetCount
+            dummySetTime = splitTime; // total time for dummy trial set is the last split time
+            averageDummyTrialTime = dummySetTime / dummySetCount; // this is the average tiem per dummy trial, including any prep/overhead
+
+            
+            estimatedTimePerTrial = averageTrialTime - averageDummyTrialTime; // should be a decent measurement of time taken to run your algorithm
+            
+            //printTable(holdVerticies, n, n);
+            //printTable(holdPermutations, 4, n+2);
+
+            /*
+            printf("\n\nShortest Path\n");
+
+            int remaining = n;
+            int nextNumber = 0;
+
+            while(remaining > 0)
+            {
+                printf("\nFrom: %.0f To: %.0f. Cost: %.0f", holdPermutations[1][nextNumber], holdPermutations[2][nextNumber], holdPermutations[3][nextNumber]);
+
+                nextNumber = holdPermutations[2][nextNumber];
+                remaining--;
+            }
+            */
+            printf("\n\nTotal Cost: %.0f", holdPermutations[2][n+1]);
+            printf("\n\nEstimated Time: %lf\n", estimatedTimePerTrial);
+
+            for (int i = 0; i < n; i++)
+                free(holdVerticies[i]);
+    
+            free(holdVerticies);
+
+            for (int i = 0; i < permutationRows; i++)
+                free(holdPermutations[i]);
+
+            free(holdPermutations);
+
+        }
+
+
+//************************************************************************************************************************************************************
+// For each size N of input we want to test -- typically start N at 1 and double each repetition
+for(int i=0; i<10; i++)
+    if(pathType == 2)
+        for ( n=N_min; n<=N_max; n++ ) {
+
+            Sleep(1000); 
+
+            printf("\n\nGreedy / Brute Force for N: %d\n", n);
+
+            int permutationRows = 4;
+
+                // Makes array for loading edges
+            float** holdVerticies = (float**)malloc(n * sizeof(float*));
+
+            for (int i = 0; i < n; i++)
+                holdVerticies[i] = (float*)malloc(n * sizeof(float));
+
+            // Makes array for permutations
+
+            float** holdPermutations = (float**)malloc(permutationRows * sizeof(float*));
+
+            for (int i = 0; i < permutationRows; i++)
+                holdPermutations[i] = (float*)malloc((n+2)* sizeof(float));
+
+            // Switch for generation types
+            if(generationType == 0)
+            {
+                generateRandomCostMatrix(holdVerticies, n, 100);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 1)
+            {
+                //printf("\n\nUsing Euclidean Matrix");
+                generateRandomEuclideanMatrix(holdVerticies, holdPermutations, n);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 2)
+                generateRandomEuclideanCircle(holdVerticies, holdPermutations, n, 100);
+
+        //**********************************************************************************************
+            //printf("\n\nGenerate Brute Force");
+            
+            splitTime=0.0;
+            // get timestamp before set of trials are run:
+            trialSetStart = clock();
+            // For each trial trialNumber=1 to Number of Trials per input size:
+            for ( trial=0; trial < trialsCount_max && splitTime < trialsTime_max; trial++) {
+
+                bruteForce(holdPermutations[2], 1, n-1, holdPermutations, holdVerticies, n);
+
+                splitTimeStamp = clock(); // 
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            trialSetCount = trial; // value of trial when loop ends is how many we did
+            trialSetTime = splitTime; // total time for trial set is the last split time
+            averageTrialTime = trialSetTime / trialSetCount; // this is the average tiem per trial, including any prep/overhead
+
+           
+            splitTime=0.0;
+            // get timestamp before set of dummy trials are run:
+            trialSetStart = clock();
+            for ( trial=0; trial < trialSetCount  && splitTime < trialsTime_max; trial++) {
+
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            dummySetCount = trial; // value of trial when loop ends is how many we did, should be same as trialsSetCount
+            dummySetTime = splitTime; // total time for dummy trial set is the last split time
+            averageDummyTrialTime = dummySetTime / dummySetCount; // this is the average tiem per dummy trial, including any prep/overhead
+
+            
+            estimatedTimePerTrial = averageTrialTime - averageDummyTrialTime; // should be a decent measurement of time taken to run your algorithm
+            
+            //printTable(holdVerticies, n, n);
+            //printTable(holdPermutations, 4, n+2);
+/*
+            printf("\n\nShortest Path\n");
+            for(int i=0; i<=n-1; i++)
+            {
+                int j = holdPermutations[0][i];
+                int k = holdPermutations[0][i+1];
+                printf("\nFrom: %.0f To: %.0f. Cost: %.0f", holdPermutations[0][i], holdPermutations[0][i+1], holdVerticies[j][k]);
+            }*/
+
+            printf("\n\nTotal Cost: %.0f", holdPermutations[0][n+1]);
+
+            //printf("\n\nEstimated Time: %lf\n", estimatedTimePerTrial);
+        //**********************************************************************************************
+
+        //**********************************************************************************************
+            //printf("\n\nGenerate Greedy");
+            
+            splitTime=0.0;
+            // get timestamp before set of trials are run:
+            trialSetStart = clock();
+            // For each trial trialNumber=1 to Number of Trials per input size:
+            for ( trial=0; trial < trialsCount_max && splitTime < trialsTime_max; trial++) {
+
+
+                greedyAlg(holdVerticies, holdPermutations, n);
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            trialSetCount = trial; // value of trial when loop ends is how many we did
+            trialSetTime = splitTime; // total time for trial set is the last split time
+            averageTrialTime = trialSetTime / trialSetCount; // this is the average tiem per trial, including any prep/overhead
+
+            
+            splitTime=0.0;
+            // get timestamp before set of dummy trials are run:
+            trialSetStart = clock();
+            for ( trial=0; trial < trialSetCount  && splitTime < trialsTime_max; trial++) {
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            dummySetCount = trial; // value of trial when loop ends is how many we did, should be same as trialsSetCount
+            dummySetTime = splitTime; // total time for dummy trial set is the last split time
+            averageDummyTrialTime = dummySetTime / dummySetCount; // this is the average tiem per dummy trial, including any prep/overhead
+
+            
+            estimatedTimePerTrial = averageTrialTime - averageDummyTrialTime; // should be a decent measurement of time taken to run your algorithm
+            
+            //printTable(holdVerticies, n, n);
+            //printTable(holdPermutations, 4, n+2);
+
+            /*
+            printf("\n\nShortest Path\n");
+
+            int remaining = n;
+            int nextNumber = 0;
+
+            while(remaining > 0)
+            {
+                printf("\nFrom: %.0f To: %.0f. Cost: %.0f", holdPermutations[1][nextNumber], holdPermutations[2][nextNumber], holdPermutations[3][nextNumber]);
+
+                nextNumber = holdPermutations[2][nextNumber];
+                remaining--;
+            }
+            */
+            printf("\n\nTotal Cost: %.0f", holdPermutations[2][n+1]);
+            //printf("\n\nEstimated Time: %lf\n", estimatedTimePerTrial);
+        //**********************************************************************************************
+
+            for (int i = 0; i < n; i++)
+                free(holdVerticies[i]);
+    
+            free(holdVerticies);
+
+            for (int i = 0; i < permutationRows; i++)
+                free(holdPermutations[i]);
+
+            free(holdPermutations);
+
+        }
+
+
+
+//************************************************************************************************************************************************************
+	// For each size N of input we want to test -- typically start N at 1 and double each repetition
+    if(pathType == 4)
+        for ( n=N_min; n<=N_max; n=n*2 ) {
+
+            Sleep(1000); 
+
+            printf("\n\nForgetful Ant for N: %d\n", n);
+
+            int permutationRows = 4;
+
+                // Makes array for loading edges
+            float** holdVerticies = (float**)malloc(n * sizeof(float*));
+
+            for (int i = 0; i < n; i++)
+                holdVerticies[i] = (float*)malloc(n * sizeof(float));
+
+            // Makes array for permutations
+
+            float** holdPermutations = (float**)malloc(permutationRows * sizeof(float*));
+
+            for (int i = 0; i < permutationRows; i++)
+                holdPermutations[i] = (float*)malloc((n+2)* sizeof(float));
+
+            // Switch for generation types
+            if(generationType == 0)
+            {
+                generateRandomCostMatrix(holdVerticies, n, 100);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 1)
+            {
+                generateRandomEuclideanMatrix(holdVerticies, holdPermutations, n);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 2)
+                generateRandomEuclideanCircle(holdVerticies, holdPermutations, n, 100);
+
+            printf("\n\nGenerate Forgetful Ant");
+
+            strcpy(test, "0000");
+            push(&head, 100);
+            
+            splitTime=0.0;
+            // get timestamp before set of trials are run:
+            trialSetStart = clock();
+            // For each trial trialNumber=1 to Number of Trials per input size:
+            for ( trial=0; trial < trialsCount_max && splitTime < trialsTime_max; trial++) {
+
+
+                forgetfulAntColony(holdVerticies, holdPermutations, n);
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            trialSetCount = trial; // value of trial when loop ends is how many we did
+            trialSetTime = splitTime; // total time for trial set is the last split time
+            averageTrialTime = trialSetTime / trialSetCount; // this is the average tiem per trial, including any prep/overhead
+            
+            splitTime=0.0;
+            // get timestamp before set of dummy trials are run:
+            trialSetStart = clock();
+            for ( trial=0; trial < trialSetCount  && splitTime < trialsTime_max; trial++) {
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            dummySetCount = trial; // value of trial when loop ends is how many we did, should be same as trialsSetCount
+            dummySetTime = splitTime; // total time for dummy trial set is the last split time
+            averageDummyTrialTime = dummySetTime / dummySetCount; // this is the average tiem per dummy trial, including any prep/overhead
+
+            
+            estimatedTimePerTrial = averageTrialTime - averageDummyTrialTime; // should be a decent measurement of time taken to run your algorithm
+            
+            //printTable(holdVerticies, n, n);
+            //printTable(holdPermutations, 4, n+2);
+/*
+            printf("\n\nShortest Path\n");
+            for(int i=0; i<=n-1; i++)
+            {
+                int j = holdPermutations[0][i];
+                int k = holdPermutations[0][i+1];
+                printf("\nFrom: %.0f To: %.0f. Cost: %.0f", holdPermutations[0][i], holdPermutations[0][i+1], holdVerticies[j][k]);
+            }
+
+            printf("\n\nTotal Cost: %.0f", holdPermutations[0][n+1]);
+*/
+            printf("\n\nEstimated Time: %lf\n", estimatedTimePerTrial);
+
+            for (int i = 0; i < n; i++)
+                free(holdVerticies[i]);
+    
+            free(holdVerticies);
+
+            for (int i = 0; i < permutationRows; i++)
+                free(holdPermutations[i]);
+
+            free(holdPermutations);
+
+            printList(head);
+
+            deleteList(&head);
+
+            //printf("\n\nMade %d lists\n", listCounter);
+        }
+
+//************************************************************************************************************************************************************
+
+
+//************************************************************************************************************************************************************
+	// For each size N of input we want to test -- typically start N at 1 and double each repetition
+    if(pathType == 5)
+        for ( n=N_min; n<=N_max; n++ ) {
+
+            Sleep(1000); 
+
+            printf("\n\nForgetful Ant for N: %d\n", n);
+
+            int permutationRows = 4;
+
+                // Makes array for loading edges
+            float** holdVerticies = (float**)malloc(n * sizeof(float*));
+
+            for (int i = 0; i < n; i++)
+                holdVerticies[i] = (float*)malloc(n * sizeof(float));
+
+            // Makes array for permutations
+
+            float** holdPermutations = (float**)malloc(permutationRows * sizeof(float*));
+
+            for (int i = 0; i < permutationRows; i++)
+                holdPermutations[i] = (float*)malloc((n+2)* sizeof(float));
+
+            // Switch for generation types
+            if(generationType == 0)
+            {
+                generateRandomCostMatrix(holdVerticies, n, 100);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 1)
+            {
+                generateRandomEuclideanMatrix(holdVerticies, holdPermutations, n);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 2)
+                generateRandomEuclideanCircle(holdVerticies, holdPermutations, n, 100);
+
+
+                        //**********************************************************************************************
+            printf("\n\nGenerate Brute Force");
+            
+            splitTime=0.0;
+            trialSetStart = clock();
+            for ( trial=0; trial < trialsCount_max && splitTime < trialsTime_max; trial++) {
+
+                bruteForce(holdPermutations[2], 1, n-1, holdPermutations, holdVerticies, n);
+
+                splitTimeStamp = clock(); // 
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            trialSetCount = trial; // value of trial when loop ends is how many we did
+            trialSetTime = splitTime; // total time for trial set is the last split time
+            averageTrialTime = trialSetTime / trialSetCount; // this is the average tiem per trial, including any prep/overhead
+            
+            splitTime=0.0;
+            // get timestamp before set of dummy trials are run:
+            trialSetStart = clock();
+            for ( trial=0; trial < trialSetCount  && splitTime < trialsTime_max; trial++) {
+
+                splitTimeStamp = clock(); // 
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            dummySetCount = trial; // value of trial when loop ends is how many we did, should be same as trialsSetCount
+            dummySetTime = splitTime; // total time for dummy trial set is the last split time
+            averageDummyTrialTime = dummySetTime / dummySetCount; // this is the average tiem per dummy trial, including any prep/overhead
+
+            
+            estimatedTimePerTrial = averageTrialTime - averageDummyTrialTime; // should be a decent measurement of time taken to run your algorithm
+            
+            //printTable(holdVerticies, n, n);
+            //printTable(holdPermutations, 4, n+2);
+/*
+            printf("\n\nShortest Path\n");
+            for(int i=0; i<=n-1; i++)
+            {
+                int j = holdPermutations[0][i];
+                int k = holdPermutations[0][i+1];
+                printf("\nFrom: %.0f To: %.0f. Cost: %.0f", holdPermutations[0][i], holdPermutations[0][i+1], holdVerticies[j][k]);
+            }*/
+
+            printf("\n\nTotal Cost: %.0f", holdPermutations[0][n+1]);
+
+            printf("\n\nEstimated Time: %lf\n", estimatedTimePerTrial);
+        //**********************************************************************************************
+
+            printf("\n\nGenerate Forgetful Ant");
+
+            strcpy(test, "0000");
+            push(&head, 100);
+            
+            splitTime=0.0;
+            // get timestamp before set of trials are run:
+            trialSetStart = clock();
+            // For each trial trialNumber=1 to Number of Trials per input size:
+            for ( trial=0; trial < trialsCount_max && splitTime < trialsTime_max; trial++) {
+
+                forgetfulAntColony(holdVerticies, holdPermutations, n);
+
+                splitTimeStamp = clock(); // 
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            trialSetCount = trial; // value of trial when loop ends is how many we did
+            trialSetTime = splitTime; // total time for trial set is the last split time
+            averageTrialTime = trialSetTime / trialSetCount; // this is the average tiem per trial, including any prep/overhead
+            
+            splitTime=0.0;
+            // get timestamp before set of dummy trials are run:
+            trialSetStart = clock();
+            for ( trial=0; trial < trialSetCount  && splitTime < trialsTime_max; trial++) {
+                splitTimeStamp = clock(); // 
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            dummySetCount = trial; // value of trial when loop ends is how many we did, should be same as trialsSetCount
+            dummySetTime = splitTime; // total time for dummy trial set is the last split time
+            averageDummyTrialTime = dummySetTime / dummySetCount; // this is the average tiem per dummy trial, including any prep/overhead
+
+            
+            estimatedTimePerTrial = averageTrialTime - averageDummyTrialTime; // should be a decent measurement of time taken to run your algorithm
+            
+            //printTable(holdVerticies, n, n);
+            //printTable(holdPermutations, 4, n+2);
+/*
+            printf("\n\nShortest Path\n");
+            for(int i=0; i<=n-1; i++)
+            {
+                int j = holdPermutations[0][i];
+                int k = holdPermutations[0][i+1];
+                printf("\nFrom: %.0f To: %.0f. Cost: %.0f", holdPermutations[0][i], holdPermutations[0][i+1], holdVerticies[j][k]);
+            }
+
+            printf("\n\nTotal Cost: %.0f", holdPermutations[0][n+1]);
+*/
+            printf("\n\nEstimated Time: %lf\n", estimatedTimePerTrial);
+
+            for (int i = 0; i < n; i++)
+                free(holdVerticies[i]);
+    
+            free(holdVerticies);
+
+            for (int i = 0; i < permutationRows; i++)
+                free(holdPermutations[i]);
+
+            free(holdPermutations);
+
+            printList(head);
+
+            deleteList(&head);
+
+            //printf("\n\nMade %d lists\n", listCounter);
+
+        }
+
+//************************************************************************************************************************************************************
+
+//************************************************************************************************************************************************************
+// For each size N of input we want to test -- typically start N at 1 and double each repetition
+    if(pathType == 6)
+        for ( n=N_min; n<=N_max; n++ ) {
+
+            Sleep(1000); 
+
+            int ants = 20;
+            float smellFactor = 0.7; // 0.7
+            float smellDecay = 0.9; //0.9
+            int requiredConsecutiveSteps = 4;
+
+            printf("\n\nAnt Colony for N: %d\n", n);
+
+            int permutationRows = 4;
+
+                // Makes array for loading edges
+            float** holdVerticies = (float**)malloc(n * sizeof(float*));
+
+            for (int i = 0; i < n; i++)
+                holdVerticies[i] = (float*)malloc(n * sizeof(float));
+
+            // Makes array for permutations
+
+            float** holdPermutations = (float**)malloc(permutationRows * sizeof(float*));
+
+            for (int i = 0; i < permutationRows; i++)
+                holdPermutations[i] = (float*)malloc((n+2)* sizeof(float));
+
+
+            // Makes array for pheromones
+            float** holdSmells = (float**)malloc(n * sizeof(float*));
+
+            for (int i = 0; i < n; i++)
+                holdSmells[i] = (float*)malloc(n * sizeof(float));
+
+            float** holdNewSmells = (float**)malloc(n * sizeof(float*));
+
+            for (int i = 0; i < n; i++)
+                holdNewSmells[i] = (float*)malloc(n * sizeof(float));
+
+            // Switch for generation types
+            if(generationType == 0)
+            {
+                generateRandomCostMatrix(holdVerticies, n, 100);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 1)
+            {
+                printf("\n\nUsing Euclidean Matrix");
+                generateRandomEuclideanMatrix(holdVerticies, holdPermutations, n);
+                //printTable(holdVerticies, n, n);
+            }
+            else if(generationType == 2)
+                generateRandomEuclideanCircle(holdVerticies, holdPermutations, n, 100);
+
+            printf("\n\nGenerate Ant Colony");
+            
+            splitTime=0.0;
+            // get timestamp before set of trials are run:
+            trialSetStart = clock();
+            // For each trial trialNumber=1 to Number of Trials per input size:
+            for ( trial=0; trial < trialsCount_max && splitTime < trialsTime_max; trial++) {
+
+                antColony(holdVerticies, holdPermutations, holdSmells, holdNewSmells, ants, smellFactor, smellDecay, requiredConsecutiveSteps, n);
+
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            trialSetCount = trial; // value of trial when loop ends is how many we did
+            trialSetTime = splitTime; // total time for trial set is the last split time
+            averageTrialTime = trialSetTime / trialSetCount; // this is the average tiem per trial, including any prep/overhead
+
+            
+            splitTime=0.0;
+            // get timestamp before set of dummy trials are run:
+            trialSetStart = clock();
+            for ( trial=0; trial < trialSetCount  && splitTime < trialsTime_max; trial++) {
+
+
+                splitTimeStamp = clock(); // 
+                // split time is the difference between current split timestamp and the starting time stamp for trial set
+                splitTime = (splitTimeStamp-trialSetStart) / (double)CLOCKS_PER_SEC; // CLOCK_PER_SEC define time.h 
+            }
+            dummySetCount = trial; // value of trial when loop ends is how many we did, should be same as trialsSetCount
+            dummySetTime = splitTime; // total time for dummy trial set is the last split time
+            averageDummyTrialTime = dummySetTime / dummySetCount; // this is the average tiem per dummy trial, including any prep/overhead
+
+            
+            estimatedTimePerTrial = averageTrialTime - averageDummyTrialTime; // should be a decent measurement of time taken to run your algorithm
+            
+            //printTable(holdVerticies, n, n);
+            //printTable(holdPermutations, 4, n+2);
+            //printTable(holdSmells, n, n);
+
+
+            
+            printf("\n\nShortest Path\n");
+            for(int i=0; i<n; i++)
+            {
+                int y = holdPermutations[2][i];
+                int x = holdPermutations[2][i+1];
+                printf("\nFrom: %.0f To: %.0f. Cost: %.0f", holdPermutations[2][i], holdPermutations[2][i+1], holdVerticies[y][x]);
+            }
+            
+            printf("\n\nTotal Cost: %.0f", holdPermutations[2][n+1]);
+            
+            printf("\n\nEstimated Time: %lf\n", estimatedTimePerTrial);
+
+            for (int i = 0; i < n; i++)
+                free(holdVerticies[i]);
+    
+            free(holdVerticies);
+
+            for (int i = 0; i < permutationRows; i++)
+                free(holdPermutations[i]);
+
+            free(holdPermutations);
+
+            for (int i = 0; i < n; i++)
+                free(holdSmells[i]);
+
+            free(holdSmells);
+
+            for (int i = 0; i < n; i++)
+                free(holdNewSmells[i]);
+
+            free(holdNewSmells);
+
+        }
+
+
+//************************************************************************************************************************************************************
 
     Sleep(500); 
 
